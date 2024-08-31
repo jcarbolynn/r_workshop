@@ -5,6 +5,8 @@ setwd("~/joelle/r_workshop_2024")
 # this is a string
 name <- "Joelle"
 age <- 26
+age_string <- "26"
+
 
 # what is the difference between my_vector and my_list?
 my_vector <- c(1,4,"hello", TRUE)
@@ -18,6 +20,7 @@ my_bool
 5+5
 my_int <- 5
 my_int + my_int
+your_int <- 10
 my_int + your_int
 # was there an issue running the code above?
 
@@ -50,6 +53,8 @@ super_sleepers$rating + 2
 # do you remember the difference between dataframes and matrices?
 sleeper_nums <- data.frame(rating=1:4,
                            avg_sleep_hours=c(21, 18, 17, 10))
+
+
 sleeper_nums + 2
 sleeper_nums
 # I didn't use the assignment operator so everything I did is gone
@@ -62,12 +67,15 @@ super_sleepers <- data.frame(rating=1:4,
                              animal=c('koala', 'hedgehog', 'sloth', 'panda'),
                              country=c('Australia', 'Italy', 'Peru', 'China'),
                              avg_sleep_hours=c(21, 18, 17, 10))
+super_sleepers$avg_sleep_hours2 <- super_sleepers$avg_sleep_hours + 2
 str(super_sleepers)
 print(super_sleepers)
 
+super_sleepers + 2
+
 # R has some built in data including the iris dataframe
 # can you find other built in dataframes?
-tail(iris, 10)
+str(iris)
 
 # practice running lines of code
 # add comments wherever you need clarification
@@ -83,6 +91,12 @@ legend("topleft", # specify the location of the legend
        pch = 1:3, # specify three symbols used for the three species
        col = 1:3 # specify three colors for the three species
 ) 
+
+# packages:
+# visualizations/graphing: plotly, ggplot2
+# manipulating data: dplyr, tidyr
+# web interface: shiny
+
 
 # ------------------------------------------------------------------------
 # CLASS TWO: making graphs (boxplots, histograms, barplots, linegraphs)
@@ -103,6 +117,7 @@ str(ric_weather)
 # BASE R GRAPHS:
 # make a histogram of max temps using base R
 hist(ric_weather$tempmax)
+hist(ric_weather$humidity)
 
 # make boxplot of max temps
 boxplot(ric_weather$tempmax)
@@ -115,11 +130,19 @@ head(ric_weather, 10)
 
 # make line graph
 library(lubridate)
+lubridate::year(ric_weather[1:10, "datetime"])
+
+# library(dplyr)
+# ric_weather_dates <- ric_weather %>%
+#   mutate(datetime = as.Date(datetime, format= "%Y")) 
+# str(ric_weather_dates[1:10, "datetime"])
+
+str(ric_weather[1:10, "datetime"])
 plot(lubridate::day(ric_weather[1:10, "datetime"]), ric_weather[1:10, "tempmax"])
 # now add some titles and change appearance of line:
 plot(lubridate::day(ric_weather[1:10, "datetime"]), ric_weather[1:10, "tempmax"],
      xlab = "Day", ylab = "Temperature (F)", main = "Temperature by Day",
-     type = "b", pch = 18, col = "blue", lty = 5)
+     type = "b", pch = 0, col = "blue", lty = 10)
 # to understand what options you have you can
 # run ? with the function you are using to see more information 
 ?plot
@@ -127,7 +150,7 @@ plot(lubridate::day(ric_weather[1:10, "datetime"]), ric_weather[1:10, "tempmax"]
 # try changing various parts of the plot to see what changes and how:
 plot(lubridate::day(ric_weather[1:10, "datetime"]), ric_weather[1:10, "tempmax"],
      xlab = "Day", ylab = "Temperature (F)", main = "Temperature by Day",
-     type = "", pch = , col = "", lty = )
+     type = "p", pch = 19, col = "#999999", lty = 2)
 
 # make scatterplot of max temps and min temps
 plot(ric_weather$tempmax, ric_weather$tempmin)
@@ -190,6 +213,8 @@ weather_dates <- ric_weather %>%
                 sunset = substr(sunset, 12, 19))
 # can you tell what has changed?
 # hint: use str() to compare ric_weather (the original data) to the new dataframe just created (weather_dates)
+str(ric_weather)
+str(weather_dates)
 
 # average temperature by day of week
 temp_days <- weather_dates %>%
@@ -205,6 +230,13 @@ temp_day +
   ggtitle("Average Temperature by Day") +
   xlab("Day") + ylab("Temperature")
 
+
+temp_month <- weather_dates %>%
+  dplyr::mutate(month = lubridate::month(datetime, label = T)) %>%
+  dplyr::group_by(month) %>%
+  dplyr::summarize(ave_temp = mean(temp))
+temp_day <- ggplot2::ggplot(temp_month, aes(x = month, y = ave_temp)) +
+  geom_col()
 
 # average rainfall by precip probability
 #    reshape the data
@@ -259,6 +291,46 @@ minmax_line
 # don't worry too much about trying to reformat the data, that part is tricky
 # ask for help if you want to do something but have trouble figuring it out
 
+
+plot(weather_dates$sealevelpressure, weather_dates$dew)
+
+# long_feelslike_real <- ric_weather[,c("feelslike", "temp", "feelslikemin", "tempmin", "feelslikemax", "tempmax")] %>%
+#   tidyr::pivot_longer(
+#     cols = c('temp', 'tempmin', 'tempmax'), 
+#     names_to = "temp_type",
+#     values_to = "temp")
+# long_feelslike_real <- ric_weather[,c("feelslike", "temp", "feelslikemin", "tempmin", "feelslikemax", "tempmax")] %>%
+#   tidyr::pivot_longer(
+#     cols = c('feelslike', 'feelslikemin', 'feelslikemax'), 
+#     names_to = "feels_type",
+#     values_to = "feelslike")
+# ggplot(long_feelslike_real, aes(x = temp, y = feelslike, colour = temp_type)) + 
+#   geom_smooth() + geom_point()
+
+# plot(ric_weather$feelslike, ric_weather$temp)
+# ggplot(ric_weather, aes(feelslike, temp)) +  
+#   # Add points to the plot 
+#   # geom_point() +   
+#   geom_smooth(method = "loess", se=F, 
+#               size=1.2, color="red", 
+#               linetype = "solid")+ 
+#   ggtitle("Smooth Line Plot") +  
+#   xlab("X-axis") +  
+#   ylab("Y-axis") 
+
+sealevelpressure <- weather_dates %>%
+  dplyr::mutate(month = lubridate::month(datetime, label = T),
+                year = as.factor(lubridate::year(datetime))) %>%
+  dplyr::group_by(month, year) %>%
+  dplyr::summarize(sealevelpressure = mean(sealevelpressure))
+
+ggplot2::ggplot(sealevelpressure, aes(x = month, y = sealevelpressure, group = year, color = year)) +
+  geom_line() +
+  # geom_line(aes(group=1)) +
+  geom_point() +
+  ggtitle("Sea Level Pressure by Month") +
+  xlab("Month") + ylab("Sea Level Pressure")
+
 # ------------------------------------------------------------------------
 # CLASS THREE: data distributions, simple statistical tests
 
@@ -280,6 +352,7 @@ shapiro.test(iris$Sepal.Width)
 
 # this is data from another built in r dataset
 head(CO2)
+qqnorm(CO2$uptake)
 shapiro.test(CO2$uptake)
 nrow(CO2)
 # uptake is not normally distributed but it is actually not necessary to run a t test
@@ -295,6 +368,7 @@ plot(uptake ~ Type, data = CO2)
 t.test(uptake ~ Type, data = CO2)
 
 
+library(dplyr)
 # now lets compare the mean temperatures between 2020 and 2021
 # first create a column to differentiate the years
 ric_weather_yrs <- ric_weather %>%
@@ -309,6 +383,8 @@ shapiro.test(ric_weather_yrs %>%
                dplyr::filter(year == 2021) %>%
                dplyr::pull(temp)
 )
+# do you remember how to pull a specific column in base r?
+
 # low p values so we have to reject the null hypothesis (that the data are normally distributed)
 # but the count of observations for each year is over 50 so we can run t tests
 ric_weather_yrs %>%
@@ -329,14 +405,14 @@ t.test(temp ~ as.factor(year), data = ric_weather_yrs)
 # paired t test
 
 # mice2 contains information on mice before and after treatment
-install.packages("datarium")
-package(datarium)
+# install.packages("datarium")
+library(datarium)
 head(mice2)
 
-head(mice2)
+# t.test(Pair(before, after)~ 1, data = mice2)
 
 mice_long <- mice2 %>%
-  gather(key = "group", value = "weight", before, after)
+  tidyr::gather(key = "group", value = "weight", before, after)
 
 head(mice_long)
 
@@ -421,7 +497,7 @@ testing_data
 # based on training data, we have expected distances for each speed
 
 # check how well our model performed
-
+print(chisq.test(testing_data[,c(2,3)]))
 
 ################################################################################
 
@@ -429,12 +505,15 @@ testing_data
 # ------------------------------------------------------------------------
 # CLASS FOUR: data manipulations, formal introduction to dplyr
 
+ric_weather <- read.csv("richmond 2020-01-01 to 2021-12-31.csv")
+head(ric_weather)
+
 # subsetting data:
 ric_weather[1,1]
 ric_weather[1,c(1:3)]
 ric_weather[c(1:3),]
 ric_weather[1,"datetime"]
-ric_weather[1,c("name", "datetime", "tempmax")]
+ric_weather[1,c("name", "datetime", "feelslikemax")]
 ric_weather$datetime[1]
 ric_weather$datetime[c(1:3)]
 ric_weather$datetime
@@ -445,11 +524,15 @@ celsius <- (ric_weather$temp - 32) * 5 / 9
 ric_weather$temp_c <- celsius
 
 below_85 <- ric_weather[ric_weather$temp < 85,]
+nrow(below_85)
 
+library(dplyr)
 # dplyr example before explanation:
 below_85_dplyr <- ric_weather %>%
   dplyr::mutate(celsius = (temp - 32) * 5 / 9) %>%
   dplyr::filter(temp < 85)
+nrow(below_85_dplyr)
+
 head(below_85_dplyr[,c(1:5, 35)])
 nrow(below_85_dplyr)
 
@@ -479,20 +562,20 @@ mydata %>%
 mydata %>%
   dplyr::filter(Y2002 > 1900000)
 mydata %>%
-  dplyr::filter(Y2002 > 1500000 & Y2003 > 1500000) %>%
+  dplyr::filter(Y2002 > 1500000 | Y2003 > 1500000) %>%
   dplyr::select(Index, State, Y2002, Y2003)
 mydata %>%
   dplyr::filter(Index %in% c("A", "B", "C"))
 library(stringr)
 # find states that end in "land"
 mydata %>%
-  dplyr::filter(str_detect(State, "land$"))
+  dplyr::filter(stringr::str_detect(State, "land$"))
 # find states that start with "New"
 mydata %>%
-  dplyr::filter(str_detect(State, "^New"))
+  dplyr::filter(stringr::str_detect(State, "^New"))
 # what if you don't capitalize new?
 mydata %>%
-  dplyr::filter(str_detect(State, "^new"))
+  dplyr::filter(stringr::str_detect(State, "^new"))
 # fix by making the capitalization match
 # this does not change the state name in your dataframe, just lowercase for matching the string you enter ("new")
 mydata %>%
@@ -709,4 +792,11 @@ mydata_wide <- mydata_long %>%
 # find dates of 10 lowest temperatures
 # are there any days with the same high and low temperatures? (hint: compare rows with unique values to total rows)
 # bonus: remove any rows with temperature below a threshold (you can choose a number based on your data, maybe try 32 F)
+
+
+# barplot with uvindex as the x axis and solarenergy averaged by uvindex as the bar height
+
+index_df <- ric_weather %>%
+  dplyr::group_by(uvindex) %>%
+  dplyr::summarise(m_solarrad = mean(solarenergy))
 
