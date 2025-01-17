@@ -4,9 +4,18 @@ setwd("~/joelle/r_workshop_2024")
 # CLASS ONE:
 # this is a string
 name <- "Joelle"
+"abc" -> test
+test
+5+5
 age <- 26
 age_string <- "26"
-
+typeof(age)
+typeof(age_string)
+# can't do math on a number if it is stored as a string
+age_string + age_string
+age + age
+as.integer(name)
+as.integer(age_string) + as.integer(age_string)
 
 # what is the difference between my_vector and my_list?
 my_vector <- c(1,4,"hello", TRUE)
@@ -23,6 +32,10 @@ my_int + my_int
 your_int <- 10
 my_int + your_int
 # was there an issue running the code above?
+
+# string vs integers
+int_answer <- 5 + 5
+string_answer <- "5" + "5"
 
 # try more examples of using R as a calculator: + - * /
 # what does sqrt() do?
@@ -63,6 +76,8 @@ plus2_sleeper_nums <- sleeper_nums + 2
 plus2_sleeper_nums
 # now I have saved my changes
 
+sleeper_nums <- sleeper_nums + 2
+
 super_sleepers <- data.frame(rating=1:4,
                              animal=c('koala', 'hedgehog', 'sloth', 'panda'),
                              country=c('Australia', 'Italy', 'Peru', 'China'),
@@ -76,6 +91,7 @@ super_sleepers + 2
 # R has some built in data including the iris dataframe
 # can you find other built in dataframes?
 str(iris)
+head(iris)
 
 # practice running lines of code
 # add comments wherever you need clarification
@@ -101,12 +117,19 @@ legend("topleft", # specify the location of the legend
 # ------------------------------------------------------------------------
 # CLASS TWO: making graphs (boxplots, histograms, barplots, linegraphs)
 
+10%%4
+x <- 6
+y <- 8
+x*y
+# describe a dataframe
+# did anyone look up a package and want to share?
+
 # install ggplot2
 install.packages("ggplot2")
 # load the package
 library(ggplot2)
 
-setwd("~/joelle/r_workshop_2024")
+setwd("C:/Users/jaja0/Documents/R/r_workshop_2024")
 # load the example data, if you have set the working directory to the same location as your data you can just use the file name
 ric_weather <- read.csv("richmond 2020-01-01 to 2021-12-31.csv")
 # look at your data
@@ -128,9 +151,15 @@ barplot(ric_weather[1:10, "tempmax"])
 ric_weather[1:10, "tempmax"]
 head(ric_weather, 10)
 
+barplot(c(53.6, 59.8, 57.7, 62.2, 48.7, 55.7, 43.4, 52.5, 43.7, 61.2))
+
 # make line graph
 library(lubridate)
+# really great library for dealing with dates
+# it takes a string and understands that it is a "date" type
+# once it knows to expect a date it can give you the year or month without any extra work from you
 lubridate::year(ric_weather[1:10, "datetime"])
+str(lubridate::year(ric_weather[1:10, "datetime"]))
 
 # library(dplyr)
 # ric_weather_dates <- ric_weather %>%
@@ -225,6 +254,7 @@ temp_days <- weather_dates %>%
 # how do I make the plot show up in the plots window?
 temp_day <- ggplot2::ggplot(temp_days, aes(x = day, y = ave_temp)) +
   geom_col()
+temp_day
 # once a plot is saved as a variable you can then remember it and make changes to it later
 temp_day +
   ggtitle("Average Temperature by Day") +
@@ -235,7 +265,7 @@ temp_month <- weather_dates %>%
   dplyr::mutate(month = lubridate::month(datetime, label = T)) %>%
   dplyr::group_by(month) %>%
   dplyr::summarize(ave_temp = mean(temp))
-temp_day <- ggplot2::ggplot(temp_month, aes(x = month, y = ave_temp)) +
+ggplot2::ggplot(temp_month, aes(x = month, y = ave_temp)) +
   geom_col()
 
 # average rainfall by precip probability
@@ -336,6 +366,7 @@ ggplot2::ggplot(sealevelpressure, aes(x = month, y = sealevelpressure, group = y
 
 ric_weather <- read.csv("richmond 2020-01-01 to 2021-12-31.csv")
 hist(ric_weather$temp)
+qqnorm(ric_weather$temp)
 
 # the closer the qqnorm plot is to a straight diagonal line, the closer the data is to normal distribution
 # these look pretty good
@@ -343,6 +374,8 @@ qqnorm(ric_weather$sealevelpressure)
 qqnorm(iris$Sepal.Width)
 
 # we can use the shapiro-wilk test to find a quantitative measure of normality
+# null hypothesis is that the data are normally distributed
+# to be normally distributed do we want a p value over or under .05?
 shapiro.test(ric_weather$sealevelpressure)
 shapiro.test(iris$Sepal.Width)
 
@@ -351,7 +384,7 @@ shapiro.test(iris$Sepal.Width)
 # anything less than 5% chance of happening under that assumption (no difference) means the null hypothesis can be "rejected"
 
 # this is data from another built in r dataset
-head(CO2)
+tail(CO2, 10)
 qqnorm(CO2$uptake)
 shapiro.test(CO2$uptake)
 nrow(CO2)
@@ -396,6 +429,9 @@ plot(temp ~ as.factor(year), data = ric_weather_yrs)
 t.test(temp ~ as.factor(year), data = ric_weather_yrs)
 # what does this p value tell us about the means?
 
+# H0: no difference of means
+# Ha: difference of means
+
 # now try to find another pair in the data you can use to perform a t test
 # ex: comparing between two seasons, comparing months, comparing days of the week
 # remember the first part will be finding the means of the two groups you choose to look at
@@ -417,6 +453,8 @@ mice_long <- mice2 %>%
 head(mice_long)
 
 t.test(weight ~ group, data = mice_long, paired = TRUE)
+# for after R version 4.0.0
+t.test(Pair(before, after) ~ 1, data = mice2)
 
 ################################################################################
 
@@ -483,21 +521,25 @@ nrow(training_data)
 nrow(testing_data)
 
 # build the linear model based on the training data
+# lm(y ~ x, data = dataset)
 training_lm <- lm(dist ~ speed, data = training_data)
 summary(training_lm)
 # explains 65% of the variation
 # very significant p value
 
 # predict speed based on distance using the linear model created using the training data
-predicted_speed <- predict(training_lm, testing_data)
+predicted_dist <- predict(training_lm, testing_data)
 # added predicted values to dataframe so it is easier to look at
 testing_data <- testing_data %>%
-  dplyr::mutate(predicted = predicted_speed)
+  dplyr::mutate(predicted = predicted_dist)
 testing_data
 # based on training data, we have expected distances for each speed
 
 # check how well our model performed
 print(chisq.test(testing_data[,c(2,3)]))
+
+x = 13
+-20.1796 + (4.2582)*x
 
 ################################################################################
 
@@ -517,11 +559,12 @@ ric_weather[1,c("name", "datetime", "feelslikemax")]
 ric_weather$datetime[1]
 ric_weather$datetime[c(1:3)]
 ric_weather$datetime
-ric_weather[ric_weather$temp > 85,c(1:5)]
+ric_weather[ric_weather$temp >= 100,c(1:5)]
 
 # transforming data:
 celsius <- (ric_weather$temp - 32) * 5 / 9
 ric_weather$temp_c <- celsius
+head(ric_weather)
 
 below_85 <- ric_weather[ric_weather$temp < 85,]
 nrow(below_85)
@@ -546,7 +589,7 @@ head(mydata)
 # dplyr::select()
 mydata_selection <- mydata %>%
   dplyr::select(State, Y2010, Y2015)
-head(mydata_selection)
+head(mydata_selection, 10)
 # remember the difference between creating a new variable and just performing the function
 # if you do not set the result as a new variable it is lost
 # see some more examples of select()
@@ -599,6 +642,7 @@ mydata %>%
 mutate_column <- mydata %>%
   dplyr::mutate(new_column_name = Y2015)
 head(mutate_column)
+head(mydata)
 
 # new column with a different value
 mutate_ave_1415 <- mydata %>%
@@ -793,6 +837,19 @@ mydata_wide <- mydata_long %>%
 # are there any days with the same high and low temperatures? (hint: compare rows with unique values to total rows)
 # bonus: remove any rows with temperature below a threshold (you can choose a number based on your data, maybe try 32 F)
 
+# practice selecting/manipulating data
+# Base R
+# Select rows 30-40, columns 4-8
+# Select all rows, precip column
+# 
+# Dplyr
+# Select tempmax, cloud cover, and solar energy, where solar energy > 5
+# Select everything to do with rain, where visibility < 5
+# Select whatever columns you want where sunset time after 1800, hint library(hms), df$time <- as.hms(df$time)
+
+# Group by solar radiation, find average temperature
+
+
 
 # barplot with uvindex as the x axis and solarenergy averaged by uvindex as the bar height
 
@@ -800,3 +857,39 @@ index_df <- ric_weather %>%
   dplyr::group_by(uvindex) %>%
   dplyr::summarise(m_solarrad = mean(solarenergy))
 
+ric_weather <- read.csv("richmond 2020-01-01 to 2021-12-31.csv")
+weather_dates <- ric_weather %>%
+  dplyr::mutate(datetime = lubridate::ymd(datetime),
+                sunrise = substr(sunrise, 12, 19),
+                sunset = substr(sunset, 12, 19))
+
+feels_like <- weather_dates %>%
+  dplyr::group_by(month = lubridate::month(datetime, label=TRUE)) %>%
+  dplyr::summarise(ave_temp = mean(temp),
+                   ave_feels = mean(feelslike)) %>%
+  tidyr::pivot_longer(names_to = "real_vs_feels",
+                      values_to = "temp",
+                      cols = 2:3)
+head(feels_like)
+
+library(ggplot2)
+ggplot2::ggplot(feels_like, aes(x = month, y = temp, group = real_vs_feels, color = real_vs_feels)) +
+  geom_line(linetype = "solid") +
+  ggtitle("Average Temp by Month") +
+  xlab("Month") + ylab("Temp (F)")
+
+# p +
+#   scale_shape_discrete(name  ="Actual vs Perceived Temp",
+#                        breaks=c("ave_temp", "ave_feels"),
+#                        labels=c("Perceived", "Actual"))
+#   scale_fill_discrete(name = "Actual vs Perceived Temp", labels = c("Perceived", "Actual"))
+
+
+
+
+sum(is.na(weather_dates$windgust))
+wind <- weather_dates %>%
+  dplyr::group_by(month = lubridate::month(datetime, label=TRUE)) %>%
+  dplyr::summarise(ave_gust = mean(windgust, na.rm = T),
+                   ave_speed = mean(windspeed))
+head(wind)
